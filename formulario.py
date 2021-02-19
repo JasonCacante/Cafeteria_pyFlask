@@ -15,13 +15,13 @@ class Login(FlaskForm):
     email = EmailField('Mensaje', validators=[DataRequired(message=MESSAGE)])
     recuperar = SubmitField('Recuperar')
 
-def convertToBinaryData(filename):
+def convert_todinary_data(filename):
     #Convert digital data to binary format
     with open(filename, 'rb') as file:
-        blobData = file.read()
-    return blobData
+        blob_data = file.read()
+    return blob_data
 
-def writeTofile(data, filename):
+def write_tofile(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
     with open(filename, 'wb') as file:
         file.write(data)

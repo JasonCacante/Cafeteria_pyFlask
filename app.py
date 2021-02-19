@@ -1,8 +1,5 @@
-import sqlite3
-from flask import Flask, json, render_template, request, flash, jsonify, redirect, session, g, url_for
-from werkzeug.wrappers import CommonRequestDescriptorsMixin
-from wtforms import form
-from formulario import Login, convertToBinaryData, writeTofile
+from flask import Flask, render_template, request, flash, redirect, session, g, url_for
+from formulario import Login, convert_todinary_data, write_tofile
 import yagmail as yagmail
 import os
 import utils
@@ -20,8 +17,6 @@ MODUSUARIO = 'modificarUsuario.html'
 GESTIONARUSU = 'GestionarUsuarios.html'
 USERNAME = ''
 CONTRASEÑA = ''
-EMAILSERVER = 'ejemplomisiontic@gmail.com'
-CONTRASEÑASERVER = 'Maracuya1234'
 INICIAR = "Iniciar Sesión"
 CREARPRO = "CrearProducto.html"
 
@@ -51,24 +46,22 @@ def login():  # ESta función
                 error = "¡Usuario y/o Contraseña inválidos!"
                 flash(error)
                 return render_template(LOGIN, titulo=INICIAR, form=formulario)
-            else:
-                if check_password_hash(user[3], password):
-                    session.clear()
-                    session['user_id'] = user[0]
-                    rol_id = user[6]
-                    if rol_id == 1:
-                        return redirect(url_for('menu'))
-                    elif rol_id == 2:
-                        return redirect(url_for('usuario_aut'))
+            elif check_password_hash(user[3], password):
+                session.clear()
+                session['user_id'] = user[0]
+                rol_id = user[6]
+                if rol_id == 1:
+                    return redirect(url_for('menu'))
+                elif rol_id == 2:
+                    return redirect(url_for('usuario_aut'))
             
         else:
             if g.user is None:
                 return render_template(LOGIN, titulo=INICIAR, form=formulario)
-            else:
-                rol_id = g.user[6]
-                if rol_id == 1:
-                    return redirect(url_for('menu'))
-                elif rol_id == 2:
+            rol_id = g.user[6]
+            if rol_id == 1:
+                return redirect(url_for('menu'))
+            elif rol_id == 2:
                     return redirect(url_for('usuario_aut'))
 
     except Exception as e:
@@ -88,7 +81,7 @@ def recuperar():
     try:
         if request.method == 'POST':
             email = request.form['email']
-            server_email = yagmail.SMTP(EMAILSERVER, CONTRASEÑASERVER)
+            server_email = yagmail.SMTP()
             server_email.send(to=email, subject='Recuperar contraseña',
                              contents='Bienvenido, usa este link para recuperar tu cuenta')
             flash('Revisa tu correo para recuperar tu cuenta')
@@ -134,14 +127,15 @@ def crear_usuario():
             username = request.form['username']
             password = request.form['password']
             email = request.form['user_email']
+            
             try:
-                chck_admin = request.form['admin']
-            except Exception as e:
+                chck= request.form['admin']     
+            except Exception:  
                 chck = 2
             
             try:
-                chck_user = request.form['user']
-            except Exception as e:
+                chck= request.form['user']
+            except Exception:
                 chck = 1
 
             error = None
@@ -176,7 +170,13 @@ def crear_usuario():
                 (username, email, hash_password, datetime.datetime.now(), chck))
             db.commit()
 
-            server_email = yagmail.SMTP(EMAILSERVER, CONTRASEÑASERVER)
+            server_email = yagmail.SMTP()
+            '''Importar keyring, desde consola usar lo siguiente: 
+            import yagmail
+            yagmail.register('tu correo','tu contraseña')
+            Además crear un archivo en tu directorio home .yagmail con tu usuario.
+            Para más información consultar: https://yagmail.readthedocs.io/en/latest/setup.html
+            '''
 
             server_email.send(to=email, subject='Activa tu cuenta',
                              contents='Bienvenido, usa este link para activar tu cuenta \n Recuerda tus credenciales: \n Usuario: ' + username + '\n Contraseña: ' + password)
@@ -202,13 +202,13 @@ def mod_usuario():
             delete_button = request.form.get('delete_button', None)
 
             try:
-                chck_admin = request.form['admin']
-            except Exception as e:
+                chck= request.form['admin']
+            except Exception:
                 chck = 2
 
             try:
-                chck_user = request.form['user']
-            except Exception as e:
+                chck = request.form['user']
+            except Exception:
                 chck = 1
 
             error = None
@@ -242,7 +242,7 @@ def mod_usuario():
                 (username, email, hash_password, datetime.datetime.now(), chck, identificacion))
             db.commit()
             
-            server_email = yagmail.SMTP(EMAILSERVER, CONTRASEÑASERVER)
+            server_email = yagmail.SMTP()
             server_email.send(to=email, subject='Modificacion Usuario',
                              contents='Bienvenido, han modificado tu informacion de usuario, tus credenciales nuevas son: \n Usuario: ' + username + '\n Contraseña: ' + password)
         
@@ -319,7 +319,7 @@ def productos():
     for lista in lista_productos:
         if lista[5] is not None:
             path_img = 'static\\Images\\'+lista[1]+'.jpg'
-            writeTofile(lista[5], path_img)
+            write_tofile(lista[5], path_img)
             lista[5] = '..\\' + path_img
     return render_template('GestionarProductos.html', data = lista_productos)
 
@@ -336,7 +336,7 @@ def crear_producto():
             product_desc = request.form['productdesc']
             img = request.form['productimg']
             img_path = "static\\Images\\" + img
-            product_img = convertToBinaryData(img_path)
+            product_img = convert_todinary_data(img_path)
             error = None
 
             close_db()
@@ -381,7 +381,7 @@ def mod_producto():
             
             img = request.form['productimg']
             img_path = "static\\Images\\" + img
-            product_img = convertToBinaryData(img_path)
+            product_img = convert_todinary_data(img_path)
             
 
             db.execute(
