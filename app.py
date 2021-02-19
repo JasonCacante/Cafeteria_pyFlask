@@ -6,11 +6,9 @@ from formulario import Login, convertToBinaryData, writeTofile
 import yagmail as yagmail
 import os
 import utils
-from articulos import articulos
 from Conexion import get_db, close_db
 import datetime
 import functools
-
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
